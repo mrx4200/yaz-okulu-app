@@ -2,7 +2,8 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
-const connectionString = "postgresql://postgres.aywmigxeznxngvnpljkw:Eym12n34_5.*@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&pool_mode=session"
+// السطر السحري: قراءة الرابط بأمان من متغيرات البيئة (Vercel سيوفر هذا الرابط تلقائياً)
+const connectionString = process.env.DATABASE_URL
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 

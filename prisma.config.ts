@@ -1,7 +1,11 @@
 import { defineConfig } from '@prisma/config'
+import { loadEnvConfig } from '@next/env'
+
+// هذا السطر يجبر النظام على قراءة ملف .env محلياً
+loadEnvConfig(process.cwd())
 
 export default defineConfig({
   datasource: {
-    url: "postgresql://postgres.aywmigxeznxngvnpljkw:Eym12n34_5.*@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres",
+    url: process.env.DIRECT_URL,
   },
 })
