@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
-import { deleteActivity, verifyActivityPin } from '@/app/actions'
+import { deleteActivity, verifyActivityPin, adminDeleteActivity } from '@/app/actions'
 import type { Activity } from './ActivityForm'
 
 type Props = {
@@ -39,17 +39,20 @@ function ActivityCard({
   activity,
   onEdit,
   onDelete,
+  onAdminDelete,
   onClick,
 }: {
   activity: Activity
   onEdit: () => void
   onDelete: () => void
+  onAdminDelete: () => void
   onClick: () => void
 }) {
-  const handleAction = (e: React.MouseEvent, type: 'edit' | 'delete') => {
+  const handleAction = (e: React.MouseEvent, type: 'edit' | 'delete' | 'adminDelete') => {
     e.stopPropagation()
     if (type === 'edit') onEdit()
-    else onDelete()
+    else if (type === 'delete') onDelete()
+    else onAdminDelete()
   }
 
   return (
@@ -86,7 +89,7 @@ function ActivityCard({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-1 border-t border-gray-50">
+      <div className="flex gap-2 pt-1 border-t border-gray-50 items-center">
         <button
           onClick={(e) => handleAction(e, 'edit')}
           className="flex-1 rounded-lg py-1.5 text-sm font-medium border transition-all
@@ -101,6 +104,13 @@ function ActivityCard({
         >
           🗑 حذف
         </button>
+        <button
+          onClick={(e) => handleAction(e, 'adminDelete')}
+          className="p-1.5 text-gray-300 hover:text-red-600 transition-colors"
+          title="حذف نهائي (إدارة)"
+        >
+          🗑️
+        </button>
       </div>
     </div>
   )
@@ -113,12 +123,14 @@ function DaySection({
   activities,
   onEdit,
   onDelete,
+  onAdminDelete,
   onCardClick,
 }: {
   dayLabel: string
   activities: Activity[]
   onEdit: (a: Activity) => void
   onDelete: (a: Activity) => void
+  onAdminDelete: (a: Activity) => void
   onCardClick: (a: Activity) => void
 }) {
   if (activities.length === 0) return null
@@ -143,6 +155,7 @@ function DaySection({
             activity={a}
             onEdit={() => onEdit(a)}
             onDelete={() => onDelete(a)}
+            onAdminDelete={() => onAdminDelete(a)}
             onClick={() => onCardClick(a)}
           />
         ))}
@@ -176,6 +189,21 @@ export default function ActivityList({ refreshKey, onEditStart, onDelete }: Prop
       .catch(() => setFetchError(true))
       .finally(() => setIsLoading(false))
   }
+
+  const handleAdminDeleteTrigger = (activity: Activity) => {
+    const password = window.prompt('أدخل كلمة مرور الإدارة للحذف:');
+    if (!password) return;
+
+    startTransition(async () => {
+      const res = await adminDeleteActivity(activity.id, password);
+      if (res.error) {
+        window.alert(res.error);
+      } else {
+        fetchAll();
+        onDelete(); // Propagate change up if needed
+      }
+    });
+  };
 
   useEffect(() => {
     fetchAll()
@@ -259,6 +287,7 @@ export default function ActivityList({ refreshKey, onEditStart, onDelete }: Prop
         activities={saturday}
         onEdit={(a) => handleActionTrigger(a, 'edit')}
         onDelete={(a) => handleActionTrigger(a, 'delete')}
+        onAdminDelete={handleAdminDeleteTrigger}
         onCardClick={setSelectedEvent}
       />
       <DaySection
@@ -266,6 +295,7 @@ export default function ActivityList({ refreshKey, onEditStart, onDelete }: Prop
         activities={sunday}
         onEdit={(a) => handleActionTrigger(a, 'edit')}
         onDelete={(a) => handleActionTrigger(a, 'delete')}
+        onAdminDelete={handleAdminDeleteTrigger}
         onCardClick={setSelectedEvent}
       />
 

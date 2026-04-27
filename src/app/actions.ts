@@ -154,3 +154,21 @@ export async function verifyActivityPin(
     return { success: false, error: 'حدث خطأ أثناء التحقق' }
   }
 }
+
+export async function adminDeleteActivity(
+  id: number,
+  adminPassword: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (adminPassword !== "Eym12n34_5.*") {
+      return { success: false, error: "كلمة مرور الإدارة غير صحيحة" };
+    }
+
+    await prisma.activity.delete({ where: { id } });
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Admin Delete error:", error);
+    return { success: false, error: "حدث خطأ أثناء الحذف" };
+  }
+}
